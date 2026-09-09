@@ -1,185 +1,630 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Câmera 1782 - Santos Mapeada</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Grade de Câmeras - Eric</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0f1115;
-    --panel: #171a21;
-    --border: #2a2f3a;
-    --text: #e6e8eb;
-    --muted: #9aa3af;
-    --accent: #3ddc84;
+    --bg: #05080b;
+    --bg-soft: #070c11;
+    --panel: #0e141b;
+    --panel-2: #121a22;
+    --border: #1d2731;
+    --border-soft: rgba(255,255,255,0.06);
+    --text: #e7edf3;
+    --muted: #6b7889;
+    --accent: #37c7ff;
+    --accent-dim: rgba(55,199,255,0.15);
+    --live: #35e29a;
+    --live-dim: rgba(53,226,154,0.16);
+    --offline: #fb5475;
+    --offline-dim: rgba(251,84,117,0.14);
+    --checking: #f6b352;
+    --checking-dim: rgba(246,179,82,0.16);
+    --font-display: 'Space Grotesk', 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', 'Consolas', monospace;
+    --font-body: 'Inter', 'Segoe UI', sans-serif;
   }
+
   * { box-sizing: border-box; }
+
+  html { color-scheme: dark; }
+
   body {
     margin: 0;
-    min-height: 100vh;
-    background: var(--bg);
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(55,199,255,0.06), transparent 60%),
+      radial-gradient(900px 500px at 90% 0%, rgba(53,226,154,0.05), transparent 55%),
+      var(--bg);
     color: var(--text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    font-family: var(--font-body);
+    padding: 0 28px 40px;
+    min-height: 100vh;
+  }
+
+  ::selection { background: var(--accent-dim); color: var(--text); }
+
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 20px 4px 18px;
+    margin-bottom: 28px;
+    background: linear-gradient(180deg, var(--bg-soft) 78%, transparent);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .brand .rec {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--live);
+    box-shadow: 0 0 0 3px var(--live-dim);
+    animation: pulse-rec 2.4s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.01em;
+  }
+
+  h1 .who {
+    color: var(--muted);
+    font-weight: 500;
+  }
+
+  .status {
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .status-count {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 10px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+  }
+
+  #dateTimeNow {
+    font-variant-numeric: tabular-nums;
+    color: var(--text);
+    padding: 5px 12px;
+    border-radius: 999px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    letter-spacing: 0.02em;
+  }
+
+  #statusText {
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .area-section {
+    margin-bottom: 36px;
+  }
+
+  .area-title {
+    font-family: var(--font-display);
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin: 0 0 14px 0;
+    padding-left: 12px;
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+
+  .area-title::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 2px;
+    bottom: 2px;
+    width: 3px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, var(--accent), transparent);
+  }
+
+  .area-count {
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 400;
+    color: var(--muted);
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 18px;
+  }
+
+  .grid.grid-sm {
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 14px;
+  }
+
+  .cam {
+    background: linear-gradient(180deg, var(--panel-2), var(--panel));
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+  }
+
+  .cam:hover {
+    border-color: rgba(55,199,255,0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  }
+
+  .cam.offline:hover {
+    border-color: var(--border);
+    transform: none;
+    box-shadow: none;
+  }
+
+  .cam-label {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 10px 13px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--text);
+    border-bottom: 1px solid var(--border-soft);
+  }
+
+  .cam-label .cam-id {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    font-weight: 400;
+    margin-left: auto;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--live);
+    box-shadow: 0 0 8px var(--live);
+    flex-shrink: 0;
+    transition: background 0.2s, box-shadow 0.2s;
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+
+  .dot.offline {
+    background: var(--offline);
+    box-shadow: 0 0 8px var(--offline);
+    animation: none;
+  }
+
+  .dot.checking {
+    background: var(--checking);
+    box-shadow: 0 0 8px var(--checking);
+    animation: pulse-dot 0.9s ease-in-out infinite;
+  }
+
+  .cam-frame {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    background: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  .cam-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    cursor: zoom-in;
+    filter: saturate(1.05) contrast(1.02);
+  }
+
+  .cam-frame .err {
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.75rem;
+    text-align: center;
+    padding: 12px;
+  }
+
+  /* Cantos de mira estilo viewfinder — se acendem conforme o status */
+  .bracket {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--live);
+    opacity: 0.75;
+    transition: border-color 0.25s ease, opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .cam.offline .bracket { border-color: var(--muted); opacity: 0.3; }
+  .cam-frame:has(+ .cam-footer) .bracket {}
+
+  .cam[data-status="checking"] .bracket { border-color: var(--checking); }
+  .cam[data-status="offline"] .bracket { border-color: var(--offline); opacity: 0.35; }
+
+  .bracket-tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
+  .bracket-tr { top: 8px; right: 8px; border-left: none; border-bottom: none; }
+  .bracket-bl { bottom: 8px; left: 8px; border-right: none; border-top: none; }
+  .bracket-br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
+  .cam-footer {
+    padding: 7px 13px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border-soft);
+    letter-spacing: 0.01em;
+  }
+
+  .cam-footer.offline-text {
+    color: var(--offline);
+  }
+
+  .cam.offline .cam-frame {
+    opacity: 0.45;
+  }
+
+  /* Modal de tela cheia */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(3, 5, 8, 0.92);
+    backdrop-filter: blur(6px);
+    z-index: 999;
+    align-items: center;
+    justify-content: center;
+    padding: 32px;
+  }
+
+  .modal-overlay.open {
+    display: flex;
+  }
+
+  .modal-content {
+    max-width: 90vw;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 16px 48px;
+    gap: 14px;
   }
-  header {
-    width: 100%;
-    max-width: 900px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 8px;
+
+  .modal-content img {
+    max-width: 100%;
+    max-height: 80vh;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    cursor: default;
   }
-  h1 {
-    font-size: 1.15rem;
-    font-weight: 600;
-    margin: 0;
-  }
-  .status {
+
+  .modal-info {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: var(--muted);
+    gap: 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 0.82rem;
   }
-  .dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: var(--accent);
-    box-shadow: 0 0 0 0 rgba(61,220,132,0.6);
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0% { box-shadow: 0 0 0 0 rgba(61,220,132,0.5); }
-    70% { box-shadow: 0 0 0 8px rgba(61,220,132,0); }
-    100% { box-shadow: 0 0 0 0 rgba(61,220,132,0); }
-  }
-  .frame {
-    width: 100%;
-    max-width: 900px;
+
+  .modal-close {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-  }
-  .imgwrap {
-    position: relative;
-    width: 100%;
-    border-radius: 8px;
-    overflow: hidden;
-    background: #000;
-    aspect-ratio: 16 / 9;
-  }
-  #cam {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    display: block;
-  }
-  .footer {
-    margin-top: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    color: var(--muted);
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .btn {
-    background: transparent;
-    border: 1px solid var(--border);
     color: var(--text);
-    padding: 6px 12px;
-    border-radius: 6px;
+    border-radius: 999px;
+    padding: 6px 16px;
     cursor: pointer;
-    font-size: 0.8rem;
+    font-family: var(--font-mono);
+    font-size: 0.78rem;
+    transition: background 0.2s, border-color 0.2s;
   }
-  .btn:hover {
+
+  .modal-close:hover {
+    background: var(--panel-2);
     border-color: var(--accent);
-    color: var(--accent);
   }
-  .error {
-    display: none;
-    color: #ff6b6b;
-    font-size: 0.85rem;
-    margin-top: 8px;
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+  }
+
+  @keyframes pulse-rec {
+    0%, 100% { box-shadow: 0 0 0 3px var(--live-dim); }
+    50% { box-shadow: 0 0 0 6px transparent; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .dot, .rec { animation: none !important; }
+    .cam { transition: none !important; }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 0 14px 28px; }
+    header { padding: 14px 2px 14px; }
+    .status { gap: 10px; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <h1>Câmera 1782 — Santos Mapeada</h1>
-  <div class="status">
-    <span class="dot"></span>
-    <span>Atualização automática (3s)</span>
+  <header>
+    <div class="brand">
+      <span class="rec"></span>
+      <h1>Grade de Câmeras <span class="who">— Efranco</span></h1>
+    </div>
+    <div class="status">
+      <span id="dateTimeNow"></span>
+      <span id="statusText">Atualizando a cada 5s</span>
+      <span class="status-count"><span class="dot" id="onlineDot"></span> <span id="onlineCount">--</span> online</span>
+      <span class="status-count"><span class="dot offline" id="offlineDot"></span> <span id="offlineCount">--</span> offline</span>
+    </div>
+  </header>
+
+  <div id="areas"></div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <img id="modalImg" src="" alt="">
+      <div class="modal-info">
+        <span id="modalLabel"></span>
+        <span id="modalTime"></span>
+        <button class="modal-close" id="modalClose">Fechar (Esc)</button>
+      </div>
+    </div>
   </div>
-</header>
 
-<div class="frame">
-  <div class="imgwrap">
-    <img id="cam" src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1782/snap_c1.jpg" alt="Câmera 1782">
-  </div>
-  <div class="footer">
-    <span id="lastUpdate">Última atualização: --:--:--</span>
-    <button class="btn" id="pauseBtn">Pausar</button>
-  </div>
-  <div class="error" id="errorMsg">Falha ao carregar a imagem. Tentando novamente...</div>
-</div>
+  <script>
+    // Adicione ou remova câmeras aqui: id, name (descritivo), area (agrupamento) e url do snapshot
+    // Câmeras da mesma "area" ficam agrupadas na mesma seção, na ordem em que aparecem abaixo
+    const cameras = [
+      { id: "3206", name: "Praça Mauá", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3206/snap_c1.jpg" },
+      { id: "3210", name: "Câmera 3210", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3210/snap_c1.jpg" },
+      { id: "3211", name: "Mauá", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3211/snap_c1.jpg" },
+      { id: "3212", name: "Câmera 3212", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3212/snap_c1.jpg" },
+      { id: "3183", name: "Câmera 3183", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3183/snap_c1.jpg" },
+	  { id: "1548", name: "Pça República", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1548/snap_c1.jpg" },
+	  { id: "3149", name: "Martin Afonso", area: "Centro", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3149/snap_c1.jpg" },
+      { id: "1863", name: "Câmera 1863", area: "Valongo / Praia", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1863/snap_c1.jpg" },
+      { id: "1874", name: "Câmera 1874", area: "Valongo / Praia", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1874/snap_c1.jpg" },
+      { id: "1781", name: "Câmera 1781", area: "Valongo / Praia", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1781/snap_c1.jpg" },
+      { id: "1464", name: "Câmera 1464", area: "Valongo / Praia", url: "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1464/snap_c1.jpg" },
+    ];
 
-<a href="indexorigem.html">Sobre</a>
-<script>
-  const CAMERA_URL = "https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1782/snap_c1.jpg";
-  const REFRESH_MS = 3000;
+    const REFRESH_MS = 5000;       // intervalo normal de atualização
+    const RETRY_DELAY_MS = 2000;   // espera entre tentativas quando uma câmera falha
+    const MAX_RETRIES = 3;         // tentativas antes de marcar como offline
 
-  const img = document.getElementById('cam');
-  const lastUpdate = document.getElementById('lastUpdate');
-  const errorMsg = document.getElementById('errorMsg');
-  const pauseBtn = document.getElementById('pauseBtn');
+    const areasContainer = document.getElementById('areas');
+    const onlineCountEl = document.getElementById('onlineCount');
+    const offlineCountEl = document.getElementById('offlineCount');
 
-  let timer = null;
-  let paused = false;
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalImg = document.getElementById('modalImg');
+    const modalLabel = document.getElementById('modalLabel');
+    const modalTime = document.getElementById('modalTime');
+    const modalClose = document.getElementById('modalClose');
+    let activeCamIndex = null;
 
-  function formatTime() {
-    const d = new Date();
-    return d.toLocaleTimeString('pt-BR');
-  }
+    // Estado individual de cada câmera: 'checking' | 'online' | 'offline'
+    const camState = cameras.map(() => ({ status: 'checking', retries: 0 }));
 
-  function refreshImage() {
-    if (paused) return;
-    const url = CAMERA_URL + '?t=' + Date.now();
-    const tempImg = new Image();
-    tempImg.onload = () => {
-      img.src = url;
-      lastUpdate.textContent = 'Última atualização: ' + formatTime();
-      errorMsg.style.display = 'none';
-    };
-    tempImg.onerror = () => {
-      errorMsg.style.display = 'block';
-    };
-    tempImg.src = url;
-  }
+    function formatTime(date) {
+      return date.toLocaleTimeString('pt-BR', { hour12: false });
+    }
 
-  function startTimer() {
-    timer = setInterval(refreshImage, REFRESH_MS);
-  }
+    const dateTimeEl = document.getElementById('dateTimeNow');
+    function updateClock() {
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false });
+      dateTimeEl.textContent = `${dateStr}  ${timeStr}`;
+    }
+    updateClock();
+    setInterval(updateClock, 1000);
 
-  pauseBtn.addEventListener('click', () => {
-    paused = !paused;
-    pauseBtn.textContent = paused ? 'Retomar' : 'Pausar';
-  });
+    // Agrupa as câmeras por área, preservando a ordem de primeira aparição
+    const areaOrder = [];
+    const areaMap = {};
+    cameras.forEach((cam, index) => {
+      if (!areaMap[cam.area]) {
+        areaMap[cam.area] = [];
+        areaOrder.push(cam.area);
+      }
+      areaMap[cam.area].push(index);
+    });
 
-  refreshImage();
-  startTimer();
-</script>
+    // cardRefs[index] guarda o elemento <div class="cam"> de cada câmera, por índice global
+    const cardRefs = [];
+
+    function openModal(index) {
+      if (camState[index].status === 'offline') return;
+      activeCamIndex = index;
+      const cam = cameras[index];
+      const cardImg = cardRefs[index].querySelector('img');
+      modalImg.src = cardImg.src;
+      modalLabel.textContent = `${cam.name} (${cam.id}) — ${cam.area}`;
+      modalTime.textContent = `Atualizado às ${cardImg.dataset.updated || '--:--:--'}`;
+      modalOverlay.classList.add('open');
+    }
+
+    function closeModal() {
+      activeCamIndex = null;
+      modalOverlay.classList.remove('open');
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeModal();
+    });
+
+    // Áreas cujos cards devem ser exibidos em tamanho reduzido
+    const smallAreas = ["Valongo / Praia"];
+
+    areaOrder.forEach(areaName => {
+      const indices = areaMap[areaName];
+
+      const section = document.createElement('div');
+      section.className = 'area-section';
+
+      const title = document.createElement('h2');
+      title.className = 'area-title';
+      title.innerHTML = `${areaName} <span class="area-count">(${indices.length} câmera${indices.length > 1 ? 's' : ''})</span>`;
+      section.appendChild(title);
+
+      const grid = document.createElement('div');
+      grid.className = smallAreas.includes(areaName) ? 'grid grid-sm' : 'grid';
+
+      indices.forEach(index => {
+        const cam = cameras[index];
+        const card = document.createElement('div');
+        card.className = 'cam';
+        card.dataset.status = 'checking';
+        card.innerHTML = `
+          <div class="cam-label"><span class="dot checking"></span> ${cam.name} <span class="cam-id">#${cam.id}</span></div>
+          <div class="cam-frame">
+            <img src="${cam.url}" alt="${cam.name}">
+            <div class="err" style="display:none;">Sem sinal / falha ao carregar</div>
+            <span class="bracket bracket-tl"></span>
+            <span class="bracket bracket-tr"></span>
+            <span class="bracket bracket-bl"></span>
+            <span class="bracket bracket-br"></span>
+          </div>
+          <div class="cam-footer">Verificando...</div>
+        `;
+        card.querySelector('img').addEventListener('click', () => openModal(index));
+        cardRefs[index] = card;
+        grid.appendChild(card);
+      });
+
+      section.appendChild(grid);
+      areasContainer.appendChild(section);
+    });
+
+    function updateStatusCounter() {
+      const online = camState.filter(s => s.status === 'online').length;
+      const offline = camState.filter(s => s.status === 'offline').length;
+      onlineCountEl.textContent = online;
+      offlineCountEl.textContent = offline;
+    }
+
+    function setCardStatus(index, status, timeStr) {
+      camState[index].status = status;
+      const card = cardRefs[index];
+      const dot = card.querySelector('.dot');
+      const img = card.querySelector('img');
+      const errDiv = card.querySelector('.err');
+      const footer = card.querySelector('.cam-footer');
+
+      card.dataset.status = status;
+      dot.classList.remove('offline', 'checking');
+      card.classList.remove('offline');
+
+      if (status === 'online') {
+        img.style.display = '';
+        errDiv.style.display = 'none';
+        footer.classList.remove('offline-text');
+        footer.textContent = `Atualizado às ${timeStr}`;
+      } else if (status === 'checking') {
+        dot.classList.add('checking');
+        footer.textContent = `Tentando reconectar (${camState[index].retries}/${MAX_RETRIES})...`;
+      } else if (status === 'offline') {
+        dot.classList.add('offline');
+        card.classList.add('offline');
+        img.style.display = 'none';
+        errDiv.style.display = 'block';
+        footer.classList.add('offline-text');
+        footer.textContent = `Offline desde ${timeStr}`;
+        if (activeCamIndex === index) closeModal();
+      }
+      updateStatusCounter();
+    }
+
+    // Tenta carregar uma câmera; em caso de falha, faz retry com backoff curto
+    // antes de marcar como offline. Ao suceder, sempre reseta o contador de retries.
+    function loadCamera(index, isRetry) {
+      const cam = cameras[index];
+      const card = cardRefs[index];
+      const img = card.querySelector('img');
+      const now = new Date();
+      const timeStr = formatTime(now);
+
+      const testImg = new Image();
+      testImg.onload = () => {
+        camState[index].retries = 0;
+        img.src = testImg.src;
+        img.dataset.updated = timeStr;
+        setCardStatus(index, 'online', timeStr);
+        if (activeCamIndex === index) {
+          modalImg.src = img.src;
+          modalTime.textContent = `Atualizado às ${timeStr}`;
+        }
+      };
+      testImg.onerror = () => {
+        camState[index].retries += 1;
+        if (camState[index].retries <= MAX_RETRIES) {
+          setCardStatus(index, 'checking', timeStr);
+          setTimeout(() => loadCamera(index, true), RETRY_DELAY_MS);
+        } else {
+          setCardStatus(index, 'offline', timeStr);
+        }
+      };
+      testImg.src = cam.url + "?t=" + now.getTime();
+    }
+
+    function refreshAll() {
+      cameras.forEach((cam, i) => loadCamera(i, false));
+    }
+
+    refreshAll();
+    setInterval(refreshAll, REFRESH_MS);
+  </script>
 
 </body>
 </html>
