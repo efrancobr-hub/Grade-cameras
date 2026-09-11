@@ -29,8 +29,7 @@ h1{font-size:16px;margin:0}.tools{display:flex;gap:7px;align-items:center}button
 <script>
 const cams=[
 {id:"0380",name:"CÂMERA 0380",url:"https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam0380/snap_c1.jpg"},
-{id:"0379",name:"CÂMERA 0379",url:"https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam0379/snap_c1.jpg"},
-{id:"1464",name:"CÂMERA 1464",url:"https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1464/snap_c1.jpg"}];
+{id:"0379",name:"CÂMERA 0379",url:"https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam0379/snap_c1.jpg"}];
 let current=0,timer;
 function build(){wall.innerHTML=cams.map((c,i)=>`<section class="cam ${i?'':'active'}"><div class="label">${c.name}<span class="live">● LIVE</span></div><img id="i${c.id}"><div class="off" id="o${c.id}"><b>● CÂMERA OFFLINE</b><span>Não foi possível atualizar.</span></div><div class="time" id="t${c.id}">--:--:--</div></section>`).join('');update();mobile()}
 function update(){const x=Date.now();cams.forEach(c=>{let i=document.getElementById('i'+c.id),o=document.getElementById('o'+c.id),t=document.getElementById('t'+c.id);i.onload=()=>{i.style.display='block';o.style.display='none';t.textContent=new Date().toLocaleTimeString('pt-BR')};i.onerror=()=>{i.style.display='none';o.style.display='flex';t.textContent='ERRO'};i.src=c.url+'?t='+x})}
