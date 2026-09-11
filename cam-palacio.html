@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grade de Câmeras - NS Fátima - Santos Mapeada</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #171a21;
+    --border: #2a2f3a;
+    --text: #e6e8eb;
+    --muted: #9aa3af;
+    --accent: #3ddc84;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 24px 16px 48px;
+  }
+  header {
+    width: 100%;
+    max-width: 1400px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  h1 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin: 0;
+  }
+  .zone-tag {
+    display: inline-block;
+    background: rgba(61,220,132,0.12);
+    color: var(--accent);
+    border: 1px solid rgba(61,220,132,0.3);
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 0 rgba(61,220,132,0.6);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 0 0 rgba(61,220,132,0.5); }
+    70% { box-shadow: 0 0 0 8px rgba(61,220,132,0); }
+    100% { box-shadow: 0 0 0 0 rgba(61,220,132,0); }
+  }
+  .grid {
+    width: 100%;
+    max-width: 1400px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 20px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  }
+  .card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+  .imgwrap {
+    position: relative;
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+    aspect-ratio: 16 / 9;
+  }
+  .imgwrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .footer {
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.78rem;
+    color: var(--muted);
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 5px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.78rem;
+  }
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .error {
+    display: none;
+    color: #ff6b6b;
+    font-size: 0.78rem;
+    margin-top: 6px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Grade de Câmeras-(ProjetoExperimental)<span class="zone-tag">NS. Fátima</span></h1>
+  <div class="status">
+    <span class="dot"></span>
+    <span>Atualização automática (3s)</span>
+  </div>
+</header>
+
+<div class="grid">
+
+  <div class="card" data-cam="1285">
+    <div class="card-title">Câmera 1285</div>
+    <div class="imgwrap">
+      <img class="cam-img" src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1851/snap_c1.jpg" alt="Câmera 1851 - NS Fátima">
+    </div>
+    <div class="footer">
+      <span class="last-update">Última atualização: --:--:--</span>
+      <button class="btn pause-btn">Pausar</button>
+    </div>
+    <div class="error">Falha ao carregar a imagem. Tentando novamente...</div>
+  </div>
+
+  <div class="card" data-cam="1286">
+    <div class="card-title">Câmera 1286</div>
+    <div class="imgwrap">
+      <img class="cam-img" src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1852/snap_c1.jpg" alt="Câmera 1852 - NS Fátima">
+    </div>
+    <div class="footer">
+      <span class="last-update">Última atualização: --:--:--</span>
+      <button class="btn pause-btn">Pausar</button>
+    </div>
+    <div class="error">Falha ao carregar a imagem. Tentando novamente...</div>
+  </div>
+
+</div>
+
+<script>
+  const REFRESH_MS = 3000;
+
+  const cameras = Array.from(document.querySelectorAll('.card')).map(card => {
+    const id = card.getAttribute('data-cam');
+    const baseUrl = `https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam${id}/snap_c1.jpg`;
+    return {
+      id,
+      baseUrl,
+      img: card.querySelector('.cam-img'),
+      lastUpdateEl: card.querySelector('.last-update'),
+      errorEl: card.querySelector('.error'),
+      pauseBtn: card.querySelector('.pause-btn'),
+      paused: false
+    };
+  });
+
+  function formatTime() {
+    return new Date().toLocaleTimeString('pt-BR');
+  }
+
+  function refreshCamera(cam) {
+    if (cam.paused) return;
+    const url = cam.baseUrl + '?t=' + Date.now();
+    const tempImg = new Image();
+    tempImg.onload = () => {
+      cam.img.src = url;
+      cam.lastUpdateEl.textContent = 'Última atualização: ' + formatTime();
+      cam.errorEl.style.display = 'none';
+    };
+    tempImg.onerror = () => {
+      cam.errorEl.style.display = 'block';
+    };
+    tempImg.src = url;
+  }
+
+  cameras.forEach(cam => {
+    cam.pauseBtn.addEventListener('click', () => {
+      cam.paused = !cam.paused;
+      cam.pauseBtn.textContent = cam.paused ? 'Retomar' : 'Pausar';
+    });
+    refreshCamera(cam);
+  });
+
+  setInterval(() => {
+    cameras.forEach(refreshCamera);
+  }, REFRESH_MS);
+</script>
+
+</body>
+</html>
