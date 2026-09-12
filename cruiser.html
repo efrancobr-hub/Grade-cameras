@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Monitor de Frota — Navios Costa</title>
+<style>
+  :root {
+    --bg: #070c14;
+    --bg-alt: #0b1220;
+    --panel: #0e1728;
+    --border: #1c2c42;
+    --border-soft: #16223a;
+    --cyan: #4fd8e8;
+    --cyan-dim: #2a5a63;
+    --amber: #e8b34f;
+    --coral: #e8664f;
+    --text: #dce6f0;
+    --muted: #5f7690;
+    --mono: ui-monospace, "SF Mono", "Cascadia Mono", "Consolas", monospace;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    background:
+      radial-gradient(ellipse at top, #0c1524 0%, var(--bg) 60%);
+    background-color: var(--bg);
+    color: var(--text);
+    padding: 0 0 48px;
+  }
+
+  /* ---------- Header / bridge strip ---------- */
+  .bridge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 18px 28px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, var(--bg-alt), transparent);
+  }
+  .bridge-id {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .bridge-id .mark {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.08em;
+    color: var(--cyan);
+    border: 1px solid var(--cyan-dim);
+    border-radius: 4px;
+    padding: 2px 6px;
+  }
+  h1 {
+    font-size: 1.25rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+  .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--cyan);
+    box-shadow: 0 0 6px var(--cyan);
+    animation: pulse 1.6s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
+
+  /* ---------- Fleet selector ---------- */
+  .fleet-select {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 16px 28px;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .fleet-select .hint {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-right: 6px;
+  }
+  .ship-chip {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 7px 14px 7px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+  }
+  .ship-chip .code {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--cyan-dim);
+    border: 1px solid currentColor;
+    border-radius: 4px;
+    padding: 1px 5px;
+  }
+  .ship-chip:hover {
+    color: var(--text);
+    border-color: var(--cyan-dim);
+  }
+  .ship-chip.active {
+    color: var(--text);
+    background: #10233060;
+    border-color: var(--cyan);
+  }
+  .ship-chip.active .code {
+    color: var(--cyan);
+  }
+
+  /* ---------- Ship section ---------- */
+  main {
+    padding: 8px 28px 0;
+  }
+  .ship {
+    display: none;
+    margin-top: 28px;
+  }
+  .ship.active {
+    display: block;
+  }
+  .ship-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .ship-head .name-block {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  .ship-head .code-badge {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--bg);
+    background: var(--cyan);
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-weight: 700;
+  }
+  .ship-head h2 {
+    font-size: 1.05rem;
+    margin: 0;
+    font-weight: 700;
+  }
+  .coords-link {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--amber);
+    text-decoration: none;
+    border: 1px solid #6b5326;
+    border-radius: 4px;
+    padding: 5px 10px;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s, color 0.15s;
+  }
+  .coords-link:hover {
+    background: var(--amber);
+    color: #1a1305;
+    border-color: var(--amber);
+  }
+
+  /* ---------- Camera viewport ---------- */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 340px));
+    gap: 18px;
+    margin-bottom: 6px;
+  }
+  .viewport {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: zoom-in;
+  }
+  .viewport::before,
+  .viewport::after,
+  .viewport .corner-tl,
+  .viewport .corner-br {
+    content: "";
+    position: absolute;
+    width: 18px;
+    height: 18px;
+    border-color: var(--cyan-dim);
+    z-index: 2;
+    pointer-events: none;
+  }
+  .viewport::before {
+    top: 8px; left: 8px;
+    border-top: 2px solid var(--cyan-dim);
+    border-left: 2px solid var(--cyan-dim);
+  }
+  .viewport::after {
+    bottom: 8px; right: 8px;
+    border-bottom: 2px solid var(--cyan-dim);
+    border-right: 2px solid var(--cyan-dim);
+  }
+  .viewport img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    display: block;
+  }
+  .viewport .osd-top {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--text);
+    background: linear-gradient(180deg, rgba(0,0,0,0.65), transparent);
+    z-index: 1;
+  }
+  .viewport .osd-bottom {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: flex;
+    justify-content: flex-end;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    color: var(--muted);
+    background: linear-gradient(0deg, rgba(0,0,0,0.65), transparent);
+    z-index: 1;
+  }
+  .viewport .osd-bottom.err {
+    color: var(--coral);
+  }
+  .viewport .error-msg {
+    position: absolute;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    color: var(--coral);
+    font-size: 0.82rem;
+    text-align: center;
+    padding: 10px;
+    z-index: 1;
+  }
+
+  /* ---------- Lightbox ---------- */
+  .lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(3,6,12,0.92);
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    cursor: zoom-out;
+    padding: 30px;
+  }
+  .lightbox.open { display: flex; }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 6px;
+    box-shadow: 0 10px 50px rgba(0,0,0,0.6);
+  }
+  .lightbox .lightbox-close {
+    position: absolute;
+    top: 18px;
+    right: 26px;
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    cursor: pointer;
+    line-height: 1;
+  }
+</style>
+</head>
+<body>
+
+<div class="bridge">
+  <div class="bridge-id">
+    <span class="mark">FLEET·CAM</span>
+    <h1>Monitor de Frota — Navios Costa</h1>
+  </div>
+  <div class="status">
+    <div class="dot"></div>
+    <span id="statusText">SYNC 5s</span>
+  </div>
+</div>
+
+<div class="fleet-select" id="fleetSelect"><span class="hint">EXIBIR</span></div>
+
+<main id="shipsContainer"></main>
+
+<div class="lightbox" id="lightbox">
+  <span class="lightbox-close" id="lightboxClose">&times;</span>
+  <img id="lightboxImg" alt="Câmera ampliada">
+</div>
+
+<script>
+  const groups = [
+    {
+      name: "Costa Deliziosa",
+      code: "DE",
+      locationUrl: "https://webcams.costa.it/InfoCruise/Ship.aspx?ship=DE",
+      cameras: [
+        { name: "PROA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_DE_1.jpg" },
+        { name: "POPA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_DE_2.jpg" }
+      ]
+    },
+    {
+      name: "Costa Favolosa",
+      code: "FA",
+      locationUrl: "https://webcams.costa.it/InfoCruise/Ship.aspx?ship=FA",
+      cameras: [
+        { name: "PROA", url: "https://webcams.costa.it/Infocruise/GetImage.aspx?imgType=webcam&imgName=WebCam_FA_2.jpg" },
+        { name: "POPA", url: "https://webcams.costa.it/Infocruise/GetImage.aspx?imgType=webcam&imgName=WebCam_FA_1.jpg" }
+      ]
+    },
+    {
+      name: "Costa Fortuna",
+      code: "FO",
+      locationUrl: "https://webcams.costa.it/InfoCruise/Ship.aspx?ship=FO",
+      cameras: [
+        { name: "PROA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_FO_1.jpg" },
+        { name: "POPA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_FO_2.jpg" }
+      ]
+    },
+    {
+      name: "Costa Toscana",
+      code: "TO",
+      locationUrl: "https://webcams.costa.it/InfoCruise/Ship.aspx?ship=TO",
+      cameras: [
+        { name: "PROA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_TO_1.jpg" },
+        { name: "POPA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_TO_2.jpg" }
+      ]
+    },
+    {
+      name: "Costa Smeralda",
+      code: "ME",
+      locationUrl: "https://webcams.costa.it/InfoCruise/Ship.aspx?ship=ME",
+      cameras: [
+        { name: "PROA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_ME_1.jpg" },
+        { name: "POPA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_ME_2.jpg" }
+      ]
+    },
+    {
+      name: "Costa Serena",
+      code: "SE",
+      locationUrl: "https://webcams.costa.it/InfoCruise/Ship.aspx?ship=SE",
+      cameras: [
+        { name: "PROA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_SE_1.jpg" },
+        { name: "POPA", url: "https://webcams.costa.it/InfoCruise/GetImage.aspx?imgType=webcam&imgName=WebCam_SE_2.jpg" }
+      ]
+    }
+  ];
+
+  const REFRESH_MS = 5000;
+  const shipsContainer = document.getElementById("shipsContainer");
+  const fleetSelect = document.getElementById("fleetSelect");
+
+  function buildFleetSelect() {
+    groups.forEach((group, gi) => {
+      const chip = document.createElement("button");
+      chip.className = "ship-chip active";
+      chip.id = `chip-${gi}`;
+      chip.innerHTML = `<span class="code">${group.code}</span><span>${group.name.replace("Costa ", "")}</span>`;
+      chip.onclick = () => toggleShip(gi);
+      fleetSelect.appendChild(chip);
+    });
+  }
+
+  function toggleShip(gi) {
+    const chip = document.getElementById(`chip-${gi}`);
+    const section = document.getElementById(`ship-${gi}`);
+    const willBeActive = !chip.classList.contains("active");
+
+    const activeCount = groups.filter((_, i) => document.getElementById(`ship-${i}`).classList.contains("active")).length;
+    if (!willBeActive && activeCount <= 1) return;
+
+    chip.classList.toggle("active", willBeActive);
+    section.classList.toggle("active", willBeActive);
+  }
+
+  function buildShips() {
+    groups.forEach((group, gi) => {
+      const section = document.createElement("section");
+      section.className = "ship active";
+      section.id = `ship-${gi}`;
+
+      const head = document.createElement("div");
+      head.className = "ship-head";
+      const nameBlock = document.createElement("div");
+      nameBlock.className = "name-block";
+      nameBlock.innerHTML = `<span class="code-badge">${group.code}</span><h2>${group.name}</h2>`;
+      head.appendChild(nameBlock);
+      if (group.locationUrl) {
+        const link = document.createElement("a");
+        link.className = "coords-link";
+        link.href = group.locationUrl;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.innerHTML = `&#9678; COORDENADAS`;
+        head.appendChild(link);
+      }
+      section.appendChild(head);
+
+      const grid = document.createElement("div");
+      grid.className = "grid";
+
+      group.cameras.forEach((cam, ci) => {
+        const id = `${gi}-${ci}`;
+        const cell = document.createElement("div");
+        cell.className = "viewport";
+        cell.onclick = () => openLightbox(`img-${id}`);
+        cell.innerHTML = `
+          <div class="osd-top"><span>${group.code}·${cam.name}</span><span>${gi}${ci}</span></div>
+          <img id="img-${id}" alt="${group.name} ${cam.name}">
+          <div class="osd-bottom" id="time-${id}">--:--:--</div>
+          <div class="error-msg" id="err-${id}">SEM SINAL</div>
+        `;
+        grid.appendChild(cell);
+      });
+
+      section.appendChild(grid);
+      shipsContainer.appendChild(section);
+    });
+  }
+
+  function refreshImages() {
+    const now = new Date().toLocaleTimeString("pt-BR");
+    groups.forEach((group, gi) => {
+      group.cameras.forEach((cam, ci) => {
+        const id = `${gi}-${ci}`;
+        const img = document.getElementById(`img-${id}`);
+        const err = document.getElementById(`err-${id}`);
+        const timeEl = document.getElementById(`time-${id}`);
+        const cacheBustUrl = cam.url + (cam.url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+
+        const testImg = new Image();
+        testImg.onload = () => {
+          img.src = testImg.src;
+          img.style.display = "block";
+          err.style.display = "none";
+          timeEl.textContent = now;
+          timeEl.classList.remove("err");
+        };
+        testImg.onerror = () => {
+          err.style.display = "flex";
+          img.style.display = "none";
+          timeEl.textContent = now + " · erro";
+          timeEl.classList.add("err");
+        };
+        testImg.src = cacheBustUrl;
+      });
+    });
+  }
+
+  const lightbox = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+
+  function openLightbox(imgId) {
+    const src = document.getElementById(imgId).src;
+    if (!src) return;
+    lightboxImg.src = src;
+    lightbox.classList.add("open");
+  }
+
+  function closeLightbox() {
+    lightbox.classList.remove("open");
+    lightboxImg.src = "";
+  }
+
+  lightbox.addEventListener("click", closeLightbox);
+  document.getElementById("lightboxClose").addEventListener("click", closeLightbox);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closeLightbox();
+  });
+
+  buildFleetSelect();
+  buildShips();
+  refreshImages();
+  setInterval(refreshImages, REFRESH_MS);
+</script>
+
+</body>
+</html>
