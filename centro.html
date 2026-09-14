@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Câmeras - Monitoramento</title>
+<style>
+    body {
+        background: #1a1a1a;
+        color: #eee;
+        font-family: Arial, Helvetica, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    h1 {
+        text-align: center;
+        font-weight: 400;
+        margin-bottom: 30px;
+    }
+    .grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 20px;
+        justify-content: center;
+    }
+    .cam-card {
+        background: #262626;
+        border-radius: 10px;
+        padding: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+        width: 420px;
+    }
+    .cam-card h2 {
+        font-size: 16px;
+        font-weight: 500;
+        margin: 0 0 10px 4px;
+        color: #ccc;
+    }
+    .cam-card img {
+        width: 100%;
+        height: auto;
+        border-radius: 6px;
+        display: block;
+        background: #000;
+    }
+    .timestamp {
+        text-align: center;
+        color: #888;
+        font-size: 13px;
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Monitoramento de Câmeras</h1>
+
+<div class="grid">
+    <div class="cam-card">
+        <h2>Câmera 1925</h2>
+        <img class="cam-img" data-src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1925/snap_c1.jpg" src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1925/snap_c1.jpg" alt="Câmera 1925">
+    </div>
+    <div class="cam-card">
+        <h2>Câmera 3149</h2>
+        <img class="cam-img" data-src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3149/snap_c1.jpg" src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam3149/snap_c1.jpg" alt="Câmera 3149">
+    </div>
+    <div class="cam-card">
+        <h2>Câmera 1926</h2>
+        <img class="cam-img" data-src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1926/snap_c1.jpg" src="https://egov.santos.sp.gov.br/santosmapeada/css/img/cameras/cam1926/snap_c1.jpg" alt="Câmera 1926">
+    </div>
+</div>
+
+<div class="timestamp" id="last-update">Atualizando a cada 3s...</div>
+
+<script>
+    const refreshSeconds = 3;
+    const images = document.querySelectorAll("img.cam-img");
+
+    function refreshImages() {
+        const ts = new Date().getTime();
+        images.forEach(img => {
+            const baseUrl = img.getAttribute("data-src");
+            img.src = baseUrl + "?t=" + ts;
+        });
+        document.getElementById("last-update").innerText =
+            "Última atualização: " + new Date().toLocaleTimeString();
+    }
+
+    setInterval(refreshImages, refreshSeconds * 1000);
+</script>
+
+</body>
+</html>
